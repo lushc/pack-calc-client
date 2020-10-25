@@ -8,7 +8,10 @@ function App() {
     <ThemeProvider theme={customTheme}>
       <CSSReset />
       <Box maxW="960px" mx="auto">
-        <Header/>
+        <Header />
+        <Box p="4">
+          <CalculatorForm />
+        </Box>
       </Box>
     </ThemeProvider>
   );
