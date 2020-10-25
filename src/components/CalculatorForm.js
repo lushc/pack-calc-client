@@ -7,6 +7,10 @@ import {
   Input,
   Button,
   Flex,
+  Heading,
+  Box,
+  Icon,
+  Grid,
 } from "@chakra-ui/core";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -23,8 +27,25 @@ const schema = yup.object().shape({
     .required(),
 });
 
+const PackSizeResults = ({ results }) => (
+  <Box mt={10}>
+    <Flex alignItems="center">
+      <Icon name="check-circle" size="32px" color="green.500" mr={2} />
+      <Heading size="md">You'll need...</Heading>
+    </Flex>
+    <Grid mt={2} templateColumns="repeat(5, 1fr)" gap={6}>
+      {results.map(([key, value]) => (
+        <Box key={key} p={5} shadow="md" borderWidth="1px">
+          <Heading>{value}x</Heading>
+          <Heading fontSize="xl">{key}</Heading>
+        </Box>
+      ))}
+    </Grid>
+  </Box>
+);
+
 export default function HookForm() {
-  const [results, setResults] = React.useState();
+  const [results, setResults] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const { handleSubmit, reset, errors, register } = useForm({
     resolver: yupResolver(schema),
@@ -39,8 +60,6 @@ export default function HookForm() {
     try {
       const res = await fetch(process.env.REACT_APP_API_URL, {
         method: "POST",
-        // mode: "cors",
-        // credentials: "omit",
         headers: {
           "Content-Type": "application/json",
           "X-Api-Key": process.env.REACT_APP_API_KEY,
@@ -59,8 +78,6 @@ export default function HookForm() {
       setIsLoading(false);
     }
   }
-
-  console.log(results);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -107,7 +124,10 @@ export default function HookForm() {
           Calculate
         </Button>
         <Button
-          onClick={() => reset()}
+          onClick={() => {
+            setResults(null);
+            reset();
+          }}
           isDisabled={isLoading}
           size="lg"
           variantColor="gray"
@@ -118,6 +138,7 @@ export default function HookForm() {
           Reset
         </Button>
       </Flex>
+      {results && <PackSizeResults results={Object.entries(results)} />}
     </form>
   );
 }
