@@ -11,6 +11,7 @@ import {
   Box,
   Icon,
   Grid,
+  Text,
 } from "@chakra-ui/core";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -28,7 +29,7 @@ const schema = yup.object().shape({
 });
 
 const PackSizeResults = ({ results }) => (
-  <Box mt={10}>
+  <Box mt={6}>
     <Flex alignItems="center">
       <Icon name="check-circle" size="32px" color="green.500" mr={2} />
       <Heading size="md">You'll need...</Heading>
@@ -46,6 +47,7 @@ const PackSizeResults = ({ results }) => (
 
 export default function HookForm() {
   const [results, setResults] = React.useState(null);
+  const [apiError, setApiError] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const { handleSubmit, reset, errors, register } = useForm({
     resolver: yupResolver(schema),
@@ -57,6 +59,9 @@ export default function HookForm() {
 
   async function onSubmit(values) {
     setIsLoading(true);
+    setResults(null);
+    setApiError(null);
+
     try {
       const res = await fetch(process.env.REACT_APP_API_URL, {
         method: "POST",
@@ -65,13 +70,19 @@ export default function HookForm() {
           "X-Api-Key": process.env.REACT_APP_API_KEY,
         },
         body: JSON.stringify({
-          quantity: parseInt(values.quantity, 10),
+          quantity: values.quantity,
           packSizes: values.packSizes
             .split(",")
             .map((item) => parseInt(item.trim(), 10)),
         }),
       });
-      setResults(await res.json());
+      const data = await res.json();
+
+      if (res.status === 200) {
+        setResults(data);
+      } else {
+        setApiError(data.message ?? "Unknown API error");
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -139,6 +150,15 @@ export default function HookForm() {
         </Button>
       </Flex>
       {results && <PackSizeResults results={Object.entries(results)} />}
+      {apiError && (
+        <Box mt={6}>
+          <Flex alignItems="center">
+            <Icon name="warning" size="32px" color="red.500" mr={2} />
+            <Heading size="md">API error</Heading>
+          </Flex>
+          <Text mt={2}>{apiError}</Text>
+        </Box>
+      )}
     </form>
   );
 }
