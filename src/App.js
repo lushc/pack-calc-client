@@ -1,9 +1,16 @@
-import './App.css';
+import { ThemeProvider, CSSReset, Box } from "@chakra-ui/core";
+import { customTheme } from "./theme";
+import Header from "./components/Header";
+import CalculatorForm from "./components/CalculatorForm";
 
 function App() {
   return (
-    <div>
-    </div>
+    <ThemeProvider theme={customTheme}>
+      <CSSReset />
+      <Box maxW="960px" mx="auto">
+        <Header/>
+      </Box>
+    </ThemeProvider>
   );
 }
 
