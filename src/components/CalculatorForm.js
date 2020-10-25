@@ -7,7 +7,6 @@ import {
   Input,
   Button,
   Flex,
-  Box,
 } from "@chakra-ui/core";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -25,6 +24,8 @@ const schema = yup.object().shape({
 });
 
 export default function HookForm() {
+  const [results, setResults] = React.useState();
+  const [isLoading, setIsLoading] = React.useState(false);
   const { handleSubmit, reset, errors, register } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -33,9 +34,33 @@ export default function HookForm() {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    setIsLoading(true);
+    try {
+      const res = await fetch(process.env.REACT_APP_API_URL, {
+        method: "POST",
+        // mode: "cors",
+        // credentials: "omit",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": process.env.REACT_APP_API_KEY,
+        },
+        body: JSON.stringify({
+          quantity: parseInt(values.quantity, 10),
+          packSizes: values.packSizes
+            .split(",")
+            .map((item) => parseInt(item.trim(), 10)),
+        }),
+      });
+      setResults(await res.json());
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   }
+
+  console.log(results);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -71,7 +96,7 @@ export default function HookForm() {
       </Flex>
       <Flex mt={4}>
         <Button
-          isLoading={false}
+          isLoading={isLoading}
           loadingText="Calculating"
           size="lg"
           variantColor="gray"
@@ -83,6 +108,7 @@ export default function HookForm() {
         </Button>
         <Button
           onClick={() => reset()}
+          isDisabled={isLoading}
           size="lg"
           variantColor="gray"
           variant="outline"
