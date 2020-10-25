@@ -14,10 +14,12 @@ const Header = () => (
     <Heading as="h1" size="lg">
       Pack Calculator
     </Heading>
-    <Link href="https://github.com/lushc/pack-calc-go" isExternal>
+    <Flex alignItems="center">
       <Box display="inline-block" mr={2} as={GoMarkGithub} />
-      lushc/pack-calc-go
-    </Link>
+      <Link href="https://github.com/lushc/pack-calc-go" isExternal>
+        lushc/pack-calc-go
+      </Link>
+    </Flex>
   </Flex>
 );
 
